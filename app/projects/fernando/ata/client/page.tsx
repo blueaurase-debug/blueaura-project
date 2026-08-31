@@ -29,6 +29,8 @@ type AtaData = {
   timelineImpact: string;
   status: string;
   sentAt: string;
+  customerComment?: string;
+  decidedAt?: string;
 };
 
 export default function AtaClientPage() {
@@ -62,16 +64,39 @@ export default function AtaClientPage() {
   ) => {
     if (!data) return;
 
-    const approvedData = {
+    const completedAta = {
       ...data,
       status,
       customerComment: comment,
       decidedAt: new Date().toISOString(),
     };
 
+    const existingRegister = localStorage.getItem(
+      "blueaura-ata-register"
+    );
+
+    const register: AtaData[] = existingRegister
+      ? JSON.parse(existingRegister)
+      : [];
+
+    const existingIndex = register.findIndex(
+      (item) => item.number === completedAta.number
+    );
+
+    if (existingIndex >= 0) {
+      register[existingIndex] = completedAta;
+    } else {
+      register.push(completedAta);
+    }
+
+    localStorage.setItem(
+      "blueaura-ata-register",
+      JSON.stringify(register)
+    );
+
     localStorage.setItem(
       "blueaura-ata-decision",
-      JSON.stringify(approvedData)
+      JSON.stringify(completedAta)
     );
 
     setDecision(status);
@@ -109,6 +134,13 @@ export default function AtaClientPage() {
             <p className="mt-6 text-sm text-zinc-500">
               Beslutet har registrerats.
             </p>
+
+            <a
+              href="/projects/fernando"
+              className="mt-7 block w-full rounded-2xl bg-zinc-950 px-5 py-4 font-medium text-white"
+            >
+              Tillbaka till projektet
+            </a>
           </div>
         </div>
       </main>
@@ -206,6 +238,7 @@ export default function AtaClientPage() {
             {data.useOutgoing && (
               <section className="flex justify-between">
                 <span>Avgående</span>
+
                 <span>
                   - {money(data.outgoing)}
                 </span>

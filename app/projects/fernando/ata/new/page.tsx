@@ -1,9 +1,43 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function NewAtaPage() {
+    const [ataNumber, setAtaNumber] = useState("ÄTA-001");
+
+  useEffect(() => {
+    const savedRegister = localStorage.getItem(
+      "blueaura-ata-register"
+    );
+
+    if (!savedRegister) {
+      setAtaNumber("ÄTA-001");
+      return;
+    }
+
+    const register = JSON.parse(savedRegister);
+
+    const usedNumbers = register
+      .map((item: { number?: string }) => {
+        if (!item.number) return 0;
+
+        const match = item.number.match(/(\d+)$/);
+
+        return match ? Number(match[1]) : 0;
+      });
+
+    const highestNumber =
+      usedNumbers.length > 0
+        ? Math.max(...usedNumbers)
+        : 0;
+
+    const nextNumber = highestNumber + 1;
+
+    setAtaNumber(
+      `ÄTA-${String(nextNumber).padStart(3, "0")}`
+    );
+  }, []);
   const [title, setTitle] = useState(
     "Spotlights och extra eluttag"
   );
@@ -98,7 +132,7 @@ export default function NewAtaPage() {
 
   const openPreview = () => {
     const ataData = {
-      number: "ÄTA-001",
+      number: ataNumber,
       project: "Fernando – Villa + Pool",
       title,
       reason,
@@ -154,7 +188,7 @@ export default function NewAtaPage() {
         <div className="space-y-6">
           <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
             <p className="mb-4 text-xs uppercase tracking-wider text-zinc-500">
-              ÄTA-001
+              {ataNumber}
             </p>
 
             <label className="block text-sm text-zinc-300">

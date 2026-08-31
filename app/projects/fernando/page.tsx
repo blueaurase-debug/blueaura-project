@@ -15,32 +15,15 @@ type AtaRecord = {
 };
 
 export default function FernandoProjectPage() {
-  const [ata, setAta] = useState<AtaRecord | null>(null);
+  const [ataRegister, setAtaRegister] = useState<AtaRecord[]>([]);
 
   useEffect(() => {
-    const decision = localStorage.getItem(
-      "blueaura-ata-decision"
+    const savedRegister = localStorage.getItem(
+      "blueaura-ata-register"
     );
 
-    const sent = localStorage.getItem(
-      "blueaura-ata-sent"
-    );
-
-    const preview = localStorage.getItem(
-      "blueaura-ata-preview"
-    );
-
-    if (decision) {
-      setAta(JSON.parse(decision));
-    } else if (sent) {
-      setAta(JSON.parse(sent));
-    } else if (preview) {
-      const previewData = JSON.parse(preview);
-
-      setAta({
-        ...previewData,
-        status: "Utkast",
-      });
+    if (savedRegister) {
+      setAtaRegister(JSON.parse(savedRegister));
     }
   }, []);
 
@@ -51,14 +34,17 @@ export default function FernandoProjectPage() {
       maximumFractionDigits: 0,
     }).format(value);
 
-  const approved =
-    ata?.status === "Godkänd" ? ata.subtotal : 0;
+  const approved = ataRegister
+    .filter((ata) => ata.status === "Godkänd")
+    .reduce((sum, ata) => sum + ata.subtotal, 0);
 
-  const waiting =
-    ata?.status === "Väntar" ? ata.subtotal : 0;
+  const waiting = ataRegister
+    .filter((ata) => ata.status === "Väntar")
+    .reduce((sum, ata) => sum + ata.subtotal, 0);
 
-  const draft =
-    ata?.status === "Utkast" ? ata.subtotal : 0;
+  const draft = ataRegister
+    .filter((ata) => ata.status === "Utkast")
+    .reduce((sum, ata) => sum + ata.subtotal, 0);
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
@@ -136,62 +122,66 @@ export default function FernandoProjectPage() {
             </div>
           </div>
 
-          {ata ? (
+          {ataRegister.length > 0 ? (
             <div className="mt-6">
               <p className="mb-3 text-sm text-zinc-400">
                 ÄTA-register
               </p>
 
-              <Link
-                href="/projects/fernando/ata/details"
-                className="block rounded-2xl border border-zinc-800 bg-zinc-900 p-5 transition hover:bg-zinc-800"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs text-zinc-500">
-                      {ata.number}
-                    </p>
-
-                    <h3 className="mt-1 font-medium">
-                      {ata.title}
-                    </h3>
-
-                    <p className="mt-2 text-sm text-zinc-400">
-                      {money(ata.subtotal)} exkl. moms
-                    </p>
-
-                    <p className="mt-1 text-xs text-zinc-500">
-                      Tidplan: {ata.timelineImpact}
-                    </p>
-                  </div>
-
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs ${
-                      ata.status === "Godkänd"
-                        ? "bg-emerald-950 text-emerald-300"
-                        : ata.status === "Avvisad"
-                        ? "bg-red-950 text-red-300"
-                        : ata.status === "Väntar"
-                        ? "bg-amber-950 text-amber-300"
-                        : "bg-zinc-800 text-zinc-300"
-                    }`}
+              <div className="space-y-3">
+                {ataRegister.map((ata) => (
+                  <div
+                    key={ata.number}
+                    className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5"
                   >
-                    {ata.status}
-                  </span>
-                </div>
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-xs text-zinc-500">
+                          {ata.number}
+                        </p>
 
-                {ata.customerComment && (
-                  <div className="mt-4 border-t border-zinc-800 pt-4">
-                    <p className="text-xs text-zinc-500">
-                      Kundkommentar
-                    </p>
+                        <h3 className="mt-1 font-medium">
+                          {ata.title}
+                        </h3>
 
-                    <p className="mt-1 text-sm text-zinc-300">
-                      {ata.customerComment}
-                    </p>
+                        <p className="mt-2 text-sm text-zinc-400">
+                          {money(ata.subtotal)} exkl. moms
+                        </p>
+
+                        <p className="mt-1 text-xs text-zinc-500">
+                          Tidplan: {ata.timelineImpact}
+                        </p>
+                      </div>
+
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs ${
+                          ata.status === "Godkänd"
+                            ? "bg-emerald-950 text-emerald-300"
+                            : ata.status === "Avvisad"
+                            ? "bg-red-950 text-red-300"
+                            : ata.status === "Väntar"
+                            ? "bg-amber-950 text-amber-300"
+                            : "bg-zinc-800 text-zinc-300"
+                        }`}
+                      >
+                        {ata.status}
+                      </span>
+                    </div>
+
+                    {ata.customerComment && (
+                      <div className="mt-4 border-t border-zinc-800 pt-4">
+                        <p className="text-xs text-zinc-500">
+                          Kundkommentar
+                        </p>
+
+                        <p className="mt-1 text-sm text-zinc-300">
+                          {ata.customerComment}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                )}
-              </Link>
+                ))}
+              </div>
             </div>
           ) : (
             <div className="mt-6 rounded-2xl border border-dashed border-zinc-800 p-8 text-center">
