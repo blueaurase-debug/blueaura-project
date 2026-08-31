@@ -132,9 +132,15 @@ export default function FernandoProjectPage() {
                 {ataRegister.map((ata) => (
                   <Link
                     key={ata.number}
-                    href={`/projects/fernando/ata/details?number=${encodeURIComponent(
-                      ata.number
-                    )}`}
+                    href={
+  ata.status === "Utkast"
+    ? `/projects/fernando/ata/new?edit=${encodeURIComponent(
+        ata.number
+      )}`
+    : `/projects/fernando/ata/details?number=${encodeURIComponent(
+        ata.number
+      )}`
+}
                     className="block rounded-2xl border border-zinc-800 bg-zinc-900 p-5 transition hover:border-zinc-700 hover:bg-zinc-800"
                   >
                     <div className="flex items-start justify-between gap-4">

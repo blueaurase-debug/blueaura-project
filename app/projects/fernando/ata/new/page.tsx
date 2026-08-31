@@ -1,43 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function NewAtaPage() {
-    const [ataNumber, setAtaNumber] = useState("ÄTA-001");
+  const searchParams = useSearchParams();
+  const editNumber = searchParams.get("edit");
 
-  useEffect(() => {
-    const savedRegister = localStorage.getItem(
-      "blueaura-ata-register"
-    );
-
-    if (!savedRegister) {
-      setAtaNumber("ÄTA-001");
-      return;
-    }
-
-    const register = JSON.parse(savedRegister);
-
-    const usedNumbers = register
-      .map((item: { number?: string }) => {
-        if (!item.number) return 0;
-
-        const match = item.number.match(/(\d+)$/);
-
-        return match ? Number(match[1]) : 0;
-      });
-
-    const highestNumber =
-      usedNumbers.length > 0
-        ? Math.max(...usedNumbers)
-        : 0;
-
-    const nextNumber = highestNumber + 1;
-
-    setAtaNumber(
-      `ÄTA-${String(nextNumber).padStart(3, "0")}`
-    );
-  }, []);
+  const [ataNumber, setAtaNumber] = useState("ÄTA-001");
   const [title, setTitle] = useState(
     "Spotlights och extra eluttag"
   );
@@ -80,6 +51,58 @@ export default function NewAtaPage() {
 
   const [timelineImpact, setTimelineImpact] =
     useState("+1 arbetsdag");
+      useEffect(() => {
+    const savedRegister = localStorage.getItem(
+      "blueaura-ata-register"
+    );
+
+    const register = savedRegister
+      ? JSON.parse(savedRegister)
+      : [];
+
+    if (editNumber) {
+      const draft = register.find(
+        (item: { number: string }) =>
+          item.number === editNumber
+      );
+
+      if (draft) {
+        setAtaNumber(draft.number);
+        setTitle(draft.title);
+        setReason(draft.reason);
+        setDescription(draft.description);
+        setMaterials(draft.materials);
+        setHours(draft.hours);
+        setHourlyRate(draft.hourlyRate);
+        setUseOutgoing(draft.useOutgoing);
+        setOutgoing(draft.outgoing);
+        setTimelineImpact(draft.timelineImpact);
+      }
+
+      return;
+    }
+
+    const usedNumbers = register.map(
+      (item: { number?: string }) => {
+        if (!item.number) return 0;
+
+        const match = item.number.match(/(\d+)$/);
+
+        return match ? Number(match[1]) : 0;
+      }
+    );
+
+    const highestNumber =
+      usedNumbers.length > 0
+        ? Math.max(...usedNumbers)
+        : 0;
+
+    const nextNumber = highestNumber + 1;
+
+    setAtaNumber(
+      `ÄTA-${String(nextNumber).padStart(3, "0")}`
+    );
+  }, [editNumber]);
 
   const materialTotal = materials.reduce(
     (sum, item) => sum + item.quantity * item.unitPrice,
@@ -160,6 +183,61 @@ export default function NewAtaPage() {
     window.location.href =
       "/projects/fernando/ata/preview";
   };
+  const saveDraft = () => {
+  const draftData = {
+    number: ataNumber,
+    project: "Fernando – Villa + Pool",
+    title,
+    reason,
+    description,
+    materials,
+    materialTotal,
+    hours,
+    hourlyRate,
+    labour,
+    useOutgoing,
+    outgoing,
+    added,
+    subtotal,
+    vat,
+    total,
+    timelineImpact,
+    status: "Utkast",
+    updatedAt: new Date().toISOString(),
+  };
+
+  const savedRegister = localStorage.getItem(
+    "blueaura-ata-register"
+  );
+
+  const register = savedRegister
+    ? JSON.parse(savedRegister)
+    : [];
+
+  const existingIndex = register.findIndex(
+    (item: { number: string }) =>
+      item.number === ataNumber
+  );
+
+  if (existingIndex >= 0) {
+    register[existingIndex] = draftData;
+  } else {
+    register.push(draftData);
+  }
+
+  localStorage.setItem(
+    "blueaura-ata-register",
+    JSON.stringify(register)
+  );
+
+  localStorage.setItem(
+    "blueaura-ata-draft",
+    JSON.stringify(draftData)
+  );
+
+  window.location.href =
+    "/projects/fernando";
+};
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
@@ -519,9 +597,13 @@ export default function NewAtaPage() {
             </div>
           </section>
 
-          <button className="w-full rounded-2xl border border-zinc-700 px-5 py-4 font-medium">
-            Spara utkast
-          </button>
+          <button
+  type="button"
+  onClick={saveDraft}
+  className="w-full rounded-2xl border border-zinc-700 px-5 py-4 font-medium"
+>
+  Spara utkast
+</button>
 
           <button
             type="button"
