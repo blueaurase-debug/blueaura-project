@@ -1,498 +1,206 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-export default function NewAtaPage() {
-  const router = useRouter();
+type AtaRecord = {
+  number: string;
+  title: string;
+  subtotal: number;
+  total: number;
+  timelineImpact: string;
+  status: string;
+  customerComment?: string;
+  decidedAt?: string;
+};
 
-  const [title, setTitle] = useState("Spotlights och extra eluttag");
+export default function FernandoProjectPage() {
+  const [ata, setAta] = useState<AtaRecord | null>(null);
 
-  const [reason, setReason] = useState("Kundändring");
-
-  const [description, setDescription] = useState(
-    "Kök: 8 st spotlights. Badrum entréplan: 6 st spotlights samt extra dubbeluttag IP55. Badrum övre plan: 6 st spotlights samt extra dubbeluttag IP55."
-  );
-
-  const [materials, setMaterials] = useState([
-    {
-      id: 1,
-      description: "Spotlight",
-      quantity: 20,
-      unit: "st",
-      unitPrice: 100,
-    },
-    {
-      id: 2,
-      description: "Dubbeluttag IP55",
-      quantity: 2,
-      unit: "st",
-      unitPrice: 250,
-    },
-    {
-      id: 3,
-      description: "Transformator",
-      quantity: 2,
-      unit: "st",
-      unitPrice: 350,
-    },
-  ]);
-
-  const [hours, setHours] = useState(25);
-  const [hourlyRate, setHourlyRate] = useState(450);
-
-  const [useOutgoing, setUseOutgoing] = useState(false);
-  const [outgoing, setOutgoing] = useState(0);
-
-  const [timelineImpact, setTimelineImpact] =
-    useState("+1 arbetsdag");
-
-  const materialTotal = materials.reduce(
-    (sum, item) => sum + item.quantity * item.unitPrice,
-    0
-  );
-
-  const labour = hours * hourlyRate;
-  const added = materialTotal + labour;
-  const subtotal = added - (useOutgoing ? outgoing : 0);
-  const vat = subtotal * 0.25;
-  const total = subtotal + vat;
-
-  const updateMaterial = (
-    id: number,
-    field: "description" | "quantity" | "unit" | "unitPrice",
-    value: string | number
-  ) => {
-    setMaterials((current) =>
-      current.map((item) =>
-        item.id === id ? { ...item, [field]: value } : item
-      )
+  useEffect(() => {
+    const decision = localStorage.getItem(
+      "blueaura-ata-decision"
     );
-  };
 
-  const addMaterial = () => {
-    setMaterials((current) => [
-      ...current,
-      {
-        id: Date.now(),
-        description: "",
-        quantity: 1,
-        unit: "st",
-        unitPrice: 0,
-      },
-    ]);
-  };
-
-  const removeMaterial = (id: number) => {
-    setMaterials((current) =>
-      current.filter((item) => item.id !== id)
+    const sent = localStorage.getItem(
+      "blueaura-ata-sent"
     );
-  };
+
+    const preview = localStorage.getItem(
+      "blueaura-ata-preview"
+    );
+
+    if (decision) {
+      setAta(JSON.parse(decision));
+    } else if (sent) {
+      setAta(JSON.parse(sent));
+    } else if (preview) {
+      const previewData = JSON.parse(preview);
+
+      setAta({
+        ...previewData,
+        status: "Utkast",
+      });
+    }
+  }, []);
 
   const money = (value: number) =>
     new Intl.NumberFormat("sv-SE", {
       style: "currency",
       currency: "SEK",
-      maximumFractionDigits: 2,
+      maximumFractionDigits: 0,
     }).format(value);
 
-  const openPreview = () => {
-    const ataData = {
-      number: "ÄTA-001",
-      project: "Fernando – Villa + Pool",
-      title,
-      reason,
-      description,
-      materials,
-      materialTotal,
-      hours,
-      hourlyRate,
-      labour,
-      useOutgoing,
-      outgoing,
-      added,
-      subtotal,
-      vat,
-      total,
-      timelineImpact,
-      createdAt: new Date().toISOString(),
-    };
+  const approved =
+    ata?.status === "Godkänd" ? ata.subtotal : 0;
 
-    localStorage.setItem(
-      "blueaura-ata-preview",
-      JSON.stringify(ataData)
-    );
+  const waiting =
+    ata?.status === "Väntar" ? ata.subtotal : 0;
 
-    router.push("/projects/fernando/ata/preview");
-  };
+  const draft =
+    ata?.status === "Utkast" ? ata.subtotal : 0;
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       <div className="mx-auto max-w-md px-6 py-10">
         <Link
-          href="/projects/fernando"
+          href="/"
           className="mb-8 inline-block text-sm text-zinc-400 hover:text-white"
         >
-          ← Tillbaka till projektet
+          ← Tillbaka
         </Link>
 
         <header className="mb-8">
-          <p className="text-sm tracking-[0.3em] text-zinc-400">
+          <p className="text-sm font-medium tracking-[0.3em] text-zinc-400">
             BLUEAURA PROJECT
           </p>
 
-          <h1 className="mt-3 text-3xl font-semibold">
-            Ny ÄTA
+          <h1 className="mt-3 text-2xl font-semibold">
+            Fernando – Villa + Pool
           </h1>
 
-          <p className="mt-2 text-sm text-zinc-400">
-            Fernando – Villa + Pool
-          </p>
+          <div className="mt-3 flex items-center gap-3">
+            <span className="text-sm text-zinc-400">
+              Totalentreprenad
+            </span>
+
+            <span className="rounded-full bg-zinc-800 px-3 py-1 text-xs">
+              Aktiv
+            </span>
+          </div>
         </header>
 
-        <div className="space-y-6">
-          <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-            <p className="mb-4 text-xs uppercase tracking-wider text-zinc-500">
-              ÄTA-001
-            </p>
-
-            <label className="block text-sm text-zinc-300">
-              Rubrik
-            </label>
-
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none"
-            />
-
-            <label className="mt-5 block text-sm text-zinc-300">
-              Orsak
-            </label>
-
-            <select
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none"
-            >
-              <option>Kundändring</option>
-              <option>Oförutsett arbete</option>
-              <option>Ändrade förutsättningar</option>
-              <option>Projekteringsändring</option>
-              <option>Myndighetskrav</option>
-              <option>Annat</option>
-            </select>
-
-            <label className="mt-5 block text-sm text-zinc-300">
-              Beskrivning
-            </label>
-
-            <textarea
-              rows={5}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none"
-            />
-          </section>
-
-          <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-            <h2 className="text-lg font-semibold">
-              Tillkommande
+        <section>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-xl font-semibold">
+              ÄTA
             </h2>
 
-            <div className="mt-5">
-              <div className="mb-3 flex items-center justify-between">
-                <span className="text-sm text-zinc-300">
-                  Material
-                </span>
+            <Link
+              href="/projects/fernando/ata/new"
+              className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black"
+            >
+              + Ny ÄTA
+            </Link>
+          </div>
 
-                <span className="text-sm font-medium">
-                  {money(materialTotal)}
-                </span>
-              </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
+              <p className="text-xs text-zinc-400">
+                Godkända
+              </p>
 
-              <div className="space-y-3">
-                {materials.map((item) => (
-                  <div
-                    key={item.id}
-                    className="rounded-xl border border-zinc-700 bg-zinc-950 p-4"
-                  >
-                    <input
-                      type="text"
-                      value={item.description}
-                      placeholder="Material"
-                      onChange={(e) =>
-                        updateMaterial(
-                          item.id,
-                          "description",
-                          e.target.value
-                        )
-                      }
-                      className="w-full bg-transparent text-sm outline-none"
-                    />
+              <p className="mt-2 text-lg font-semibold">
+                {money(approved)}
+              </p>
+            </div>
 
-                    <div className="mt-3 grid grid-cols-3 gap-2">
-                      <div>
-                        <p className="mb-1 text-xs text-zinc-500">
-                          Antal
-                        </p>
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
+              <p className="text-xs text-zinc-400">
+                Väntar
+              </p>
 
-                        <input
-                          type="number"
-                          value={item.quantity}
-                          onChange={(e) =>
-                            updateMaterial(
-                              item.id,
-                              "quantity",
-                              Number(e.target.value)
-                            )
-                          }
-                          className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm outline-none"
-                        />
-                      </div>
+              <p className="mt-2 text-lg font-semibold">
+                {money(waiting)}
+              </p>
+            </div>
 
-                      <div>
-                        <p className="mb-1 text-xs text-zinc-500">
-                          Enhet
-                        </p>
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
+              <p className="text-xs text-zinc-400">
+                Utkast
+              </p>
 
-                        <input
-                          type="text"
-                          value={item.unit}
-                          onChange={(e) =>
-                            updateMaterial(
-                              item.id,
-                              "unit",
-                              e.target.value
-                            )
-                          }
-                          className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm outline-none"
-                        />
-                      </div>
+              <p className="mt-2 text-lg font-semibold">
+                {money(draft)}
+              </p>
+            </div>
+          </div>
 
-                      <div>
-                        <p className="mb-1 text-xs text-zinc-500">
-                          À-pris
-                        </p>
+          {ata ? (
+            <div className="mt-6">
+              <p className="mb-3 text-sm text-zinc-400">
+                ÄTA-register
+              </p>
 
-                        <input
-                          type="number"
-                          value={item.unitPrice}
-                          onChange={(e) =>
-                            updateMaterial(
-                              item.id,
-                              "unitPrice",
-                              Number(e.target.value)
-                            )
-                          }
-                          className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="mt-3 flex items-center justify-between">
-                      <span className="text-sm font-medium">
-                        {money(item.quantity * item.unitPrice)}
-                      </span>
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          removeMaterial(item.id)
-                        }
-                        className="text-xs text-zinc-500 hover:text-white"
-                      >
-                        Ta bort
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <button
-                type="button"
-                onClick={addMaterial}
-                className="mt-3 w-full rounded-xl border border-dashed border-zinc-700 px-4 py-3 text-sm text-zinc-300 hover:border-zinc-500"
+              <Link
+                href="/projects/fernando/ata/details"
+                className="block rounded-2xl border border-zinc-800 bg-zinc-900 p-5 transition hover:bg-zinc-800"
               >
-                + Lägg till material
-              </button>
-            </div>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs text-zinc-500">
+                      {ata.number}
+                    </p>
 
-            <div className="mt-7 border-t border-zinc-800 pt-5">
-              <div className="mb-3 flex items-center justify-between">
-                <span className="text-sm text-zinc-300">
-                  Arbete
-                </span>
+                    <h3 className="mt-1 font-medium">
+                      {ata.title}
+                    </h3>
 
-                <span className="text-sm font-medium">
-                  {money(labour)}
-                </span>
-              </div>
+                    <p className="mt-2 text-sm text-zinc-400">
+                      {money(ata.subtotal)} exkl. moms
+                    </p>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <p className="mb-2 text-xs text-zinc-500">
-                    Timmar
-                  </p>
+                    <p className="mt-1 text-xs text-zinc-500">
+                      Tidplan: {ata.timelineImpact}
+                    </p>
+                  </div>
 
-                  <input
-                    type="number"
-                    value={hours}
-                    onChange={(e) =>
-                      setHours(Number(e.target.value))
-                    }
-                    className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none"
-                  />
-                </div>
-
-                <div>
-                  <p className="mb-2 text-xs text-zinc-500">
-                    Timpris
-                  </p>
-
-                  <input
-                    type="number"
-                    value={hourlyRate}
-                    onChange={(e) =>
-                      setHourlyRate(Number(e.target.value))
-                    }
-                    className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none"
-                  />
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-            <label className="flex cursor-pointer items-center gap-3">
-              <input
-                type="checkbox"
-                checked={useOutgoing}
-                onChange={(e) =>
-                  setUseOutgoing(e.target.checked)
-                }
-                className="h-5 w-5"
-              />
-
-              <span>Lägg till avgående</span>
-            </label>
-
-            {useOutgoing && (
-              <div className="mt-5">
-                <label className="block text-sm text-zinc-300">
-                  Avgående belopp
-                </label>
-
-                <input
-                  type="number"
-                  value={outgoing}
-                  onChange={(e) =>
-                    setOutgoing(Number(e.target.value))
-                  }
-                  className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none"
-                />
-              </div>
-            )}
-          </section>
-
-          <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-            <label className="block text-sm text-zinc-300">
-              Påverkan på tidplan
-            </label>
-
-            <select
-              value={timelineImpact}
-              onChange={(e) =>
-                setTimelineImpact(e.target.value)
-              }
-              className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none"
-            >
-              <option>Ingen påverkan</option>
-              <option>+1 arbetsdag</option>
-              <option>+2 arbetsdagar</option>
-              <option>+3 arbetsdagar</option>
-              <option>Annan påverkan</option>
-            </select>
-          </section>
-
-          <section className="rounded-2xl border border-zinc-700 bg-zinc-900 p-5">
-            <h2 className="mb-5 text-lg font-semibold">
-              Sammanställning
-            </h2>
-
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-zinc-400">
-                  Material
-                </span>
-                <span>{money(materialTotal)}</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-zinc-400">
-                  Arbete
-                </span>
-                <span>{money(labour)}</span>
-              </div>
-
-              <div className="flex justify-between border-t border-zinc-800 pt-3">
-                <span className="text-zinc-400">
-                  Tillkommande
-                </span>
-                <span>{money(added)}</span>
-              </div>
-
-              {useOutgoing && (
-                <div className="flex justify-between">
-                  <span className="text-zinc-400">
-                    Avgående
-                  </span>
-                  <span>- {money(outgoing)}</span>
-                </div>
-              )}
-
-              <div className="flex justify-between">
-                <span className="text-zinc-400">
-                  Summa exkl. moms
-                </span>
-                <span>{money(subtotal)}</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-zinc-400">
-                  Moms 25%
-                </span>
-                <span>{money(vat)}</span>
-              </div>
-
-              <div className="mt-4 border-t border-zinc-700 pt-4">
-                <div className="flex items-end justify-between">
-                  <span className="font-medium">
-                    Totalt inkl. moms
-                  </span>
-
-                  <span className="text-2xl font-semibold">
-                    {money(total)}
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs ${
+                      ata.status === "Godkänd"
+                        ? "bg-emerald-950 text-emerald-300"
+                        : ata.status === "Avvisad"
+                        ? "bg-red-950 text-red-300"
+                        : ata.status === "Väntar"
+                        ? "bg-amber-950 text-amber-300"
+                        : "bg-zinc-800 text-zinc-300"
+                    }`}
+                  >
+                    {ata.status}
                   </span>
                 </div>
-              </div>
+
+                {ata.customerComment && (
+                  <div className="mt-4 border-t border-zinc-800 pt-4">
+                    <p className="text-xs text-zinc-500">
+                      Kundkommentar
+                    </p>
+
+                    <p className="mt-1 text-sm text-zinc-300">
+                      {ata.customerComment}
+                    </p>
+                  </div>
+                )}
+              </Link>
             </div>
-          </section>
-
-          <button className="w-full rounded-2xl border border-zinc-700 px-5 py-4 font-medium">
-            Spara utkast
-          </button>
-
-          <button
-            type="button"
-            onClick={openPreview}
-            className="w-full rounded-2xl bg-white px-5 py-4 font-medium text-black"
-          >
-            Förhandsgranska
-          </button>
-        </div>
+          ) : (
+            <div className="mt-6 rounded-2xl border border-dashed border-zinc-800 p-8 text-center">
+              <p className="text-sm text-zinc-400">
+                Inga ÄTA registrerade ännu.
+              </p>
+            </div>
+          )}
+        </section>
       </div>
     </main>
   );
