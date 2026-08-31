@@ -4,18 +4,90 @@ import Link from "next/link";
 import { useState } from "react";
 
 export default function NewAtaPage() {
-  const [material, setMaterial] = useState(3200);
+  const [title, setTitle] = useState(
+    "Spotlights och extra eluttag"
+  );
+
+  const [reason, setReason] = useState("Kundändring");
+
+  const [description, setDescription] = useState(
+    "Kök: 8 st spotlights. Badrum entréplan: 6 st spotlights samt extra dubbeluttag IP55. Badrum övre plan: 6 st spotlights samt extra dubbeluttag IP55."
+  );
+
+  const [materials, setMaterials] = useState([
+    {
+      id: 1,
+      description: "Spotlight",
+      quantity: 20,
+      unit: "st",
+      unitPrice: 100,
+    },
+    {
+      id: 2,
+      description: "Dubbeluttag IP55",
+      quantity: 2,
+      unit: "st",
+      unitPrice: 250,
+    },
+    {
+      id: 3,
+      description: "Transformator",
+      quantity: 2,
+      unit: "st",
+      unitPrice: 350,
+    },
+  ]);
+
   const [hours, setHours] = useState(25);
   const [hourlyRate, setHourlyRate] = useState(450);
 
   const [useOutgoing, setUseOutgoing] = useState(false);
   const [outgoing, setOutgoing] = useState(0);
 
+  const [timelineImpact, setTimelineImpact] =
+    useState("+1 arbetsdag");
+
+  const materialTotal = materials.reduce(
+    (sum, item) => sum + item.quantity * item.unitPrice,
+    0
+  );
+
   const labour = hours * hourlyRate;
-  const added = material + labour;
+  const added = materialTotal + labour;
   const subtotal = added - (useOutgoing ? outgoing : 0);
   const vat = subtotal * 0.25;
   const total = subtotal + vat;
+
+  const updateMaterial = (
+    id: number,
+    field: "description" | "quantity" | "unit" | "unitPrice",
+    value: string | number
+  ) => {
+    setMaterials((current) =>
+      current.map((item) =>
+        item.id === id ? { ...item, [field]: value } : item
+      )
+    );
+  };
+
+  const addMaterial = () => {
+    setMaterials((current) => [
+      ...current,
+      {
+        id: Date.now(),
+        description: "",
+        quantity: 1,
+        unit: "st",
+        unitPrice: 0,
+      },
+    ]);
+  };
+
+  const removeMaterial = (id: number) => {
+    setMaterials((current) =>
+      current.filter((item) => item.id !== id)
+    );
+  };
 
   const money = (value: number) =>
     new Intl.NumberFormat("sv-SE", {
@@ -23,6 +95,37 @@ export default function NewAtaPage() {
       currency: "SEK",
       maximumFractionDigits: 2,
     }).format(value);
+
+  const openPreview = () => {
+    const ataData = {
+      number: "ÄTA-001",
+      project: "Fernando – Villa + Pool",
+      title,
+      reason,
+      description,
+      materials,
+      materialTotal,
+      hours,
+      hourlyRate,
+      labour,
+      useOutgoing,
+      outgoing,
+      added,
+      subtotal,
+      vat,
+      total,
+      timelineImpact,
+      createdAt: new Date().toISOString(),
+    };
+
+    localStorage.setItem(
+      "blueaura-ata-preview",
+      JSON.stringify(ataData)
+    );
+
+    window.location.href =
+      "/projects/fernando/ata/preview";
+  };
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
@@ -49,7 +152,6 @@ export default function NewAtaPage() {
         </header>
 
         <div className="space-y-6">
-
           <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
             <p className="mb-4 text-xs uppercase tracking-wider text-zinc-500">
               ÄTA-001
@@ -61,7 +163,8 @@ export default function NewAtaPage() {
 
             <input
               type="text"
-              defaultValue="Spotlights och extra eluttag"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
               className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none"
             />
 
@@ -69,7 +172,11 @@ export default function NewAtaPage() {
               Orsak
             </label>
 
-            <select className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none">
+            <select
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none"
+            >
               <option>Kundändring</option>
               <option>Oförutsett arbete</option>
               <option>Ändrade förutsättningar</option>
@@ -84,8 +191,9 @@ export default function NewAtaPage() {
 
             <textarea
               rows={5}
-              defaultValue={
-                "Kök: 8 st spotlights. Badrum entréplan: 6 st spotlights samt extra dubbeluttag IP55. Badrum övre plan: 6 st spotlights samt extra dubbeluttag IP55."
+              value={description}
+              onChange={(e) =>
+                setDescription(e.target.value)
               }
               className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none"
             />
@@ -96,57 +204,168 @@ export default function NewAtaPage() {
               Tillkommande
             </h2>
 
-            <label className="mt-5 block text-sm text-zinc-300">
-              Material
-            </label>
+            <div className="mt-5">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-sm text-zinc-300">
+                  Material
+                </span>
 
-            <input
-              type="number"
-              value={material}
-              onChange={(e) => setMaterial(Number(e.target.value))}
-              className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none"
-            />
-
-            <label className="mt-5 block text-sm text-zinc-300">
-              Arbetstid
-            </label>
-
-            <div className="mt-2 grid grid-cols-2 gap-3">
-              <div>
-                <p className="mb-2 text-xs text-zinc-500">
-                  Timmar
-                </p>
-
-                <input
-                  type="number"
-                  value={hours}
-                  onChange={(e) => setHours(Number(e.target.value))}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none"
-                />
+                <span className="text-sm font-medium">
+                  {money(materialTotal)}
+                </span>
               </div>
 
-              <div>
-                <p className="mb-2 text-xs text-zinc-500">
-                  Timpris
-                </p>
+              <div className="space-y-3">
+                {materials.map((item) => (
+                  <div
+                    key={item.id}
+                    className="rounded-xl border border-zinc-700 bg-zinc-950 p-4"
+                  >
+                    <input
+                      type="text"
+                      value={item.description}
+                      placeholder="Material"
+                      onChange={(e) =>
+                        updateMaterial(
+                          item.id,
+                          "description",
+                          e.target.value
+                        )
+                      }
+                      className="w-full bg-transparent text-sm outline-none"
+                    />
 
-                <input
-                  type="number"
-                  value={hourlyRate}
-                  onChange={(e) => setHourlyRate(Number(e.target.value))}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none"
-                />
+                    <div className="mt-3 grid grid-cols-3 gap-2">
+                      <div>
+                        <p className="mb-1 text-xs text-zinc-500">
+                          Antal
+                        </p>
+
+                        <input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) =>
+                            updateMaterial(
+                              item.id,
+                              "quantity",
+                              Number(e.target.value)
+                            )
+                          }
+                          className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <p className="mb-1 text-xs text-zinc-500">
+                          Enhet
+                        </p>
+
+                        <input
+                          type="text"
+                          value={item.unit}
+                          onChange={(e) =>
+                            updateMaterial(
+                              item.id,
+                              "unit",
+                              e.target.value
+                            )
+                          }
+                          className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <p className="mb-1 text-xs text-zinc-500">
+                          À-pris
+                        </p>
+
+                        <input
+                          type="number"
+                          value={item.unitPrice}
+                          onChange={(e) =>
+                            updateMaterial(
+                              item.id,
+                              "unitPrice",
+                              Number(e.target.value)
+                            )
+                          }
+                          className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-between">
+                      <span className="text-sm font-medium">
+                        {money(
+                          item.quantity * item.unitPrice
+                        )}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          removeMaterial(item.id)
+                        }
+                        className="text-xs text-zinc-500 hover:text-white"
+                      >
+                        Ta bort
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
+
+              <button
+                type="button"
+                onClick={addMaterial}
+                className="mt-3 w-full rounded-xl border border-dashed border-zinc-700 px-4 py-3 text-sm text-zinc-300 hover:border-zinc-500"
+              >
+                + Lägg till material
+              </button>
             </div>
 
-            <div className="mt-4 flex justify-between text-sm">
-              <span className="text-zinc-400">
-                Arbete
-              </span>
+            <div className="mt-7 border-t border-zinc-800 pt-5">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-sm text-zinc-300">
+                  Arbete
+                </span>
 
-              <span>
-                {money(labour)}
-              </span>
+                <span className="text-sm font-medium">
+                  {money(labour)}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="mb-2 text-xs text-zinc-500">
+                    Timmar
+                  </p>
+
+                  <input
+                    type="number"
+                    value={hours}
+                    onChange={(e) =>
+                      setHours(Number(e.target.value))
+                    }
+                    className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <p className="mb-2 text-xs text-zinc-500">
+                    Timpris
+                  </p>
+
+                  <input
+                    type="number"
+                    value={hourlyRate}
+                    onChange={(e) =>
+                      setHourlyRate(Number(e.target.value))
+                    }
+                    className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none"
+                  />
+                </div>
+              </div>
             </div>
           </section>
 
@@ -155,13 +374,13 @@ export default function NewAtaPage() {
               <input
                 type="checkbox"
                 checked={useOutgoing}
-                onChange={(e) => setUseOutgoing(e.target.checked)}
+                onChange={(e) =>
+                  setUseOutgoing(e.target.checked)
+                }
                 className="h-5 w-5"
               />
 
-              <span>
-                Lägg till avgående
-              </span>
+              <span>Lägg till avgående</span>
             </label>
 
             {useOutgoing && (
@@ -173,7 +392,9 @@ export default function NewAtaPage() {
                 <input
                   type="number"
                   value={outgoing}
-                  onChange={(e) => setOutgoing(Number(e.target.value))}
+                  onChange={(e) =>
+                    setOutgoing(Number(e.target.value))
+                  }
                   className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none"
                 />
               </div>
@@ -186,14 +407,17 @@ export default function NewAtaPage() {
             </label>
 
             <select
-  defaultValue="+1 arbetsdag"
-  className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none"
->
-  <option>Ingen påverkan</option>
-  <option>+1 arbetsdag</option>
-  <option>+2 arbetsdagar</option>
-  <option>+3 arbetsdagar</option>
-  <option>Annan påverkan</option>
+              value={timelineImpact}
+              onChange={(e) =>
+                setTimelineImpact(e.target.value)
+              }
+              className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none"
+            >
+              <option>Ingen påverkan</option>
+              <option>+1 arbetsdag</option>
+              <option>+2 arbetsdagar</option>
+              <option>+3 arbetsdagar</option>
+              <option>Annan påverkan</option>
             </select>
           </section>
 
@@ -204,6 +428,20 @@ export default function NewAtaPage() {
 
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
+                <span className="text-zinc-400">
+                  Material
+                </span>
+                <span>{money(materialTotal)}</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-zinc-400">
+                  Arbete
+                </span>
+                <span>{money(labour)}</span>
+              </div>
+
+              <div className="flex justify-between border-t border-zinc-800 pt-3">
                 <span className="text-zinc-400">
                   Tillkommande
                 </span>
@@ -251,10 +489,13 @@ export default function NewAtaPage() {
             Spara utkast
           </button>
 
-          <button className="w-full rounded-2xl bg-white px-5 py-4 font-medium text-black">
+          <button
+            type="button"
+            onClick={openPreview}
+            className="w-full rounded-2xl bg-white px-5 py-4 font-medium text-black"
+          >
             Förhandsgranska
           </button>
-
         </div>
       </div>
     </main>
