@@ -130,9 +130,12 @@ export default function FernandoProjectPage() {
 
               <div className="space-y-3">
                 {ataRegister.map((ata) => (
-                  <div
+                  <Link
                     key={ata.number}
-                    className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5"
+                    href={`/projects/fernando/ata/details?number=${encodeURIComponent(
+                      ata.number
+                    )}`}
+                    className="block rounded-2xl border border-zinc-800 bg-zinc-900 p-5 transition hover:border-zinc-700 hover:bg-zinc-800"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div>
@@ -179,7 +182,7 @@ export default function FernandoProjectPage() {
                         </p>
                       </div>
                     )}
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 type MaterialItem = {
   id: number;
@@ -34,17 +35,36 @@ type AtaData = {
 };
 
 export default function AtaDetailsPage() {
+  const searchParams = useSearchParams();
+
+  const ataNumber = searchParams.get("number");
+
   const [data, setData] = useState<AtaData | null>(null);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem(
-      "blueaura-ata-decision"
+    const savedRegister = localStorage.getItem(
+      "blueaura-ata-register"
     );
 
-    if (saved) {
-      setData(JSON.parse(saved));
+    if (!savedRegister || !ataNumber) {
+      setLoaded(true);
+      return;
     }
-  }, []);
+
+    const register: AtaData[] =
+      JSON.parse(savedRegister);
+
+    const selectedAta = register.find(
+      (item) => item.number === ataNumber
+    );
+
+    if (selectedAta) {
+      setData(selectedAta);
+    }
+
+    setLoaded(true);
+  }, [ataNumber]);
 
   const money = (value: number) =>
     new Intl.NumberFormat("sv-SE", {
@@ -52,6 +72,18 @@ export default function AtaDetailsPage() {
       currency: "SEK",
       maximumFractionDigits: 2,
     }).format(value);
+
+  if (!loaded) {
+    return (
+      <main className="min-h-screen bg-zinc-950 text-white">
+        <div className="mx-auto max-w-2xl px-6 py-10">
+          <p className="text-zinc-400">
+            Laddar ÄTA...
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   if (!data) {
     return (
@@ -65,7 +97,7 @@ export default function AtaDetailsPage() {
           </Link>
 
           <p className="mt-8 text-zinc-400">
-            Ingen ÄTA-data hittades.
+            ÄTA kunde inte hittas.
           </p>
         </div>
       </main>
@@ -160,7 +192,8 @@ export default function AtaDetailsPage() {
 
                     <span>
                       {money(
-                        item.quantity * item.unitPrice
+                        item.quantity *
+                          item.unitPrice
                       )}
                     </span>
                   </div>
@@ -202,7 +235,9 @@ export default function AtaDetailsPage() {
                     Summa exkl. moms
                   </span>
 
-                  <span>{money(data.subtotal)}</span>
+                  <span>
+                    {money(data.subtotal)}
+                  </span>
                 </div>
 
                 <div className="flex justify-between">
@@ -210,7 +245,9 @@ export default function AtaDetailsPage() {
                     Moms 25%
                   </span>
 
-                  <span>{money(data.vat)}</span>
+                  <span>
+                    {money(data.vat)}
+                  </span>
                 </div>
 
                 <div className="border-t border-zinc-300 pt-4">
