@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 
 type MaterialItem = {
@@ -24,22 +23,26 @@ type AtaData = {
   labour: number;
   useOutgoing: boolean;
   outgoing: number;
-  added: number;
   subtotal: number;
   vat: number;
   total: number;
   timelineImpact: string;
-  createdAt: string;
-  status?: string;
-  sentAt?: string;
+  status: string;
+  sentAt: string;
 };
 
-export default function AtaPreviewPage() {
+export default function AtaClientPage() {
   const [data, setData] = useState<AtaData | null>(null);
+
+  const [decision, setDecision] = useState<
+    "Godkänd" | "Avvisad" | null
+  >(null);
+
+  const [comment, setComment] = useState("");
 
   useEffect(() => {
     const saved = localStorage.getItem(
-      "blueaura-ata-preview"
+      "blueaura-ata-sent"
     );
 
     if (saved) {
@@ -54,62 +57,76 @@ export default function AtaPreviewPage() {
       maximumFractionDigits: 2,
     }).format(value);
 
-  const sendForApproval = () => {
+  const saveDecision = (
+    status: "Godkänd" | "Avvisad"
+  ) => {
     if (!data) return;
 
-    const sentData = {
+    const approvedData = {
       ...data,
-      status: "Väntar",
-      sentAt: new Date().toISOString(),
+      status,
+      customerComment: comment,
+      decidedAt: new Date().toISOString(),
     };
 
     localStorage.setItem(
-      "blueaura-ata-sent",
-      JSON.stringify(sentData)
+      "blueaura-ata-decision",
+      JSON.stringify(approvedData)
     );
 
-    window.location.href =
-      "/projects/fernando/ata/client";
+    setDecision(status);
   };
 
   if (!data) {
     return (
-      <main className="min-h-screen bg-zinc-950 text-white">
-        <div className="mx-auto max-w-md px-6 py-10">
-          <p className="text-zinc-400">
-            Ingen ÄTA-data hittades.
-          </p>
+      <main className="min-h-screen bg-zinc-100 px-5 py-10">
+        <div className="mx-auto max-w-lg">
+          <p>Ingen ÄTA hittades.</p>
+        </div>
+      </main>
+    );
+  }
 
-          <Link
-            href="/projects/fernando/ata/new"
-            className="mt-5 inline-block text-sm underline"
-          >
-            Tillbaka
-          </Link>
+  if (decision) {
+    return (
+      <main className="min-h-screen bg-zinc-100 px-5 py-10 text-zinc-950">
+        <div className="mx-auto max-w-lg">
+          <div className="rounded-3xl bg-white p-8 text-center shadow-sm">
+            <p className="text-xs tracking-[0.35em] text-zinc-400">
+              BLUEAURA
+            </p>
+
+            <h1 className="mt-6 text-2xl font-semibold">
+              {decision === "Godkänd"
+                ? "ÄTA godkänd"
+                : "ÄTA avvisad"}
+            </h1>
+
+            <p className="mt-3 text-zinc-500">
+              {data.number} – {data.title}
+            </p>
+
+            <p className="mt-6 text-sm text-zinc-500">
+              Beslutet har registrerats.
+            </p>
+          </div>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-zinc-950 px-4 py-8 text-white">
-      <div className="mx-auto max-w-2xl">
-        <Link
-          href="/projects/fernando/ata/new"
-          className="mb-6 inline-block text-sm text-zinc-400 hover:text-white"
-        >
-          ← Redigera ÄTA
-        </Link>
-
-        <div className="overflow-hidden rounded-3xl bg-white text-zinc-950">
+    <main className="min-h-screen bg-zinc-100 px-4 py-8 text-zinc-950">
+      <div className="mx-auto max-w-lg">
+        <div className="overflow-hidden rounded-3xl bg-white shadow-sm">
           <header className="border-b border-zinc-200 px-6 py-7">
-            <p className="text-xs font-medium tracking-[0.35em] text-zinc-500">
+            <p className="text-xs font-medium tracking-[0.35em] text-zinc-400">
               BLUEAURA
             </p>
 
-            <div className="mt-3 flex items-start justify-between gap-5">
+            <div className="mt-4 flex items-start justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-semibold">
+                <h1 className="text-xl font-semibold">
                   Ändrings- och tilläggsarbete
                 </h1>
 
@@ -118,7 +135,7 @@ export default function AtaPreviewPage() {
                 </p>
               </div>
 
-              <span className="rounded-full bg-zinc-100 px-3 py-2 text-xs font-medium">
+              <span className="rounded-full bg-zinc-100 px-3 py-2 text-xs">
                 {data.number}
               </span>
             </div>
@@ -126,11 +143,7 @@ export default function AtaPreviewPage() {
 
           <div className="space-y-7 px-6 py-7">
             <section>
-              <p className="text-xs font-medium uppercase tracking-wider text-zinc-400">
-                Ändring
-              </p>
-
-              <h2 className="mt-2 text-xl font-semibold">
+              <h2 className="text-xl font-semibold">
                 {data.title}
               </h2>
 
@@ -144,26 +157,18 @@ export default function AtaPreviewPage() {
             </section>
 
             <section>
-              <div className="mb-3 flex items-center justify-between">
-                <h3 className="font-semibold">
-                  Material
-                </h3>
-
-                <span className="font-medium">
-                  {money(data.materialTotal)}
-                </span>
-              </div>
+              <h3 className="mb-3 font-semibold">
+                Material
+              </h3>
 
               <div className="divide-y divide-zinc-200 rounded-xl border border-zinc-200">
                 {data.materials.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center justify-between gap-4 px-4 py-3 text-sm"
+                    className="flex justify-between gap-4 px-4 py-3 text-sm"
                   >
                     <div>
-                      <p className="font-medium">
-                        {item.description || "Material"}
-                      </p>
+                      <p>{item.description}</p>
 
                       <p className="mt-1 text-xs text-zinc-500">
                         {item.quantity} {item.unit} ×{" "}
@@ -181,11 +186,11 @@ export default function AtaPreviewPage() {
               </div>
             </section>
 
-            <section className="flex items-center justify-between border-b border-zinc-200 pb-5">
+            <section className="flex justify-between">
               <div>
-                <h3 className="font-semibold">
+                <p className="font-semibold">
                   Arbete
-                </h3>
+                </p>
 
                 <p className="mt-1 text-xs text-zinc-500">
                   {data.hours} h ×{" "}
@@ -193,18 +198,15 @@ export default function AtaPreviewPage() {
                 </p>
               </div>
 
-              <span className="font-medium">
+              <span>
                 {money(data.labour)}
               </span>
             </section>
 
             {data.useOutgoing && (
-              <section className="flex items-center justify-between">
-                <span className="text-sm text-zinc-600">
-                  Avgående
-                </span>
-
-                <span className="text-sm">
+              <section className="flex justify-between">
+                <span>Avgående</span>
+                <span>
                   - {money(data.outgoing)}
                 </span>
               </section>
@@ -216,18 +218,24 @@ export default function AtaPreviewPage() {
                   <span className="text-zinc-500">
                     Summa exkl. moms
                   </span>
-                  <span>{money(data.subtotal)}</span>
+
+                  <span>
+                    {money(data.subtotal)}
+                  </span>
                 </div>
 
                 <div className="flex justify-between">
                   <span className="text-zinc-500">
                     Moms 25%
                   </span>
-                  <span>{money(data.vat)}</span>
+
+                  <span>
+                    {money(data.vat)}
+                  </span>
                 </div>
 
                 <div className="border-t border-zinc-300 pt-4">
-                  <div className="flex items-end justify-between gap-4">
+                  <div className="flex items-end justify-between">
                     <span className="font-semibold">
                       Totalt inkl. moms
                     </span>
@@ -241,7 +249,7 @@ export default function AtaPreviewPage() {
             </section>
 
             <section>
-              <p className="text-xs font-medium uppercase tracking-wider text-zinc-400">
+              <p className="text-xs uppercase tracking-wider text-zinc-400">
                 Påverkan på tidplan
               </p>
 
@@ -251,30 +259,49 @@ export default function AtaPreviewPage() {
             </section>
 
             <section className="border-t border-zinc-200 pt-6">
-              <p className="text-xs leading-5 text-zinc-500">
-                Detta är en förhandsgranskning av ÄTA.
-                Dokumentet är ännu inte skickat för
-                godkännande.
-              </p>
+              <label className="text-sm font-medium">
+                Kommentar
+              </label>
+
+              <textarea
+                rows={4}
+                value={comment}
+                onChange={(e) =>
+                  setComment(e.target.value)
+                }
+                placeholder="Valfri kommentar..."
+                className="mt-2 w-full rounded-xl border border-zinc-300 px-4 py-3 outline-none"
+              />
             </section>
+
+            <section className="space-y-3">
+              <button
+                type="button"
+                onClick={() =>
+                  saveDecision("Godkänd")
+                }
+                className="w-full rounded-2xl bg-zinc-950 px-5 py-4 font-medium text-white"
+              >
+                Godkänn ÄTA
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  saveDecision("Avvisad")
+                }
+                className="w-full rounded-2xl border border-zinc-300 px-5 py-4 font-medium"
+              >
+                Avvisa
+              </button>
+            </section>
+
+            <p className="text-xs leading-5 text-zinc-400">
+              Genom att godkänna bekräftar kunden den
+              beskrivna ändringen, angivet pris och
+              eventuell påverkan på tidplan.
+            </p>
           </div>
-        </div>
-
-        <div className="mt-6 space-y-3">
-          <Link
-            href="/projects/fernando/ata/new"
-            className="block w-full rounded-2xl border border-zinc-700 px-5 py-4 text-center font-medium"
-          >
-            Redigera
-          </Link>
-
-          <button
-            type="button"
-            onClick={sendForApproval}
-            className="w-full rounded-2xl bg-white px-5 py-4 font-medium text-black"
-          >
-            Skicka för godkännande
-          </button>
         </div>
       </div>
     </main>
