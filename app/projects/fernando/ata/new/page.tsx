@@ -2,9 +2,17 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 export default function NewAtaPage() {
+  return (
+    <Suspense fallback={null}>
+      <NewAtaContent />
+    </Suspense>
+  );
+}
+
+function NewAtaContent() {
   const searchParams = useSearchParams();
   const editNumber = searchParams.get("edit");
 

@@ -1,7 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import {
+  Suspense,
+  useEffect,
+  useState,
+} from "react";
 import { useSearchParams } from "next/navigation";
 
 type MaterialItem = {
@@ -34,12 +38,26 @@ type AtaData = {
   decidedAt?: string;
 };
 
-export default function AtaDetailsPage() {
+function LoadingScreen() {
+  return (
+    <main className="min-h-screen bg-zinc-950 text-white">
+      <div className="mx-auto max-w-2xl px-6 py-10">
+        <p className="text-zinc-400">
+          Laddar ÄTA...
+        </p>
+      </div>
+    </main>
+  );
+}
+
+function AtaDetailsContent() {
   const searchParams = useSearchParams();
 
   const ataNumber = searchParams.get("number");
 
-  const [data, setData] = useState<AtaData | null>(null);
+  const [data, setData] =
+    useState<AtaData | null>(null);
+
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -74,15 +92,7 @@ export default function AtaDetailsPage() {
     }).format(value);
 
   if (!loaded) {
-    return (
-      <main className="min-h-screen bg-zinc-950 text-white">
-        <div className="mx-auto max-w-2xl px-6 py-10">
-          <p className="text-zinc-400">
-            Laddar ÄTA...
-          </p>
-        </div>
-      </main>
-    );
+    return <LoadingScreen />;
   }
 
   if (!data) {
@@ -123,7 +133,8 @@ export default function AtaDetailsPage() {
             <div className="mt-3 flex items-start justify-between gap-5">
               <div>
                 <h1 className="text-2xl font-semibold">
-                  Ändrings- och tilläggsarbete
+                  Ändrings- och
+                  tilläggsarbete
                 </h1>
 
                 <p className="mt-2 text-sm text-zinc-500">
@@ -169,35 +180,44 @@ export default function AtaDetailsPage() {
                 </h3>
 
                 <span className="font-medium">
-                  {money(data.materialTotal)}
+                  {money(
+                    data.materialTotal
+                  )}
                 </span>
               </div>
 
               <div className="divide-y divide-zinc-200 rounded-xl border border-zinc-200">
-                {data.materials.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center justify-between gap-4 px-4 py-3 text-sm"
-                  >
-                    <div>
-                      <p className="font-medium">
-                        {item.description}
-                      </p>
+                {data.materials.map(
+                  (item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between gap-4 px-4 py-3 text-sm"
+                    >
+                      <div>
+                        <p className="font-medium">
+                          {
+                            item.description
+                          }
+                        </p>
 
-                      <p className="mt-1 text-xs text-zinc-500">
-                        {item.quantity} {item.unit} ×{" "}
-                        {money(item.unitPrice)}
-                      </p>
+                        <p className="mt-1 text-xs text-zinc-500">
+                          {item.quantity}{" "}
+                          {item.unit} ×{" "}
+                          {money(
+                            item.unitPrice
+                          )}
+                        </p>
+                      </div>
+
+                      <span>
+                        {money(
+                          item.quantity *
+                            item.unitPrice
+                        )}
+                      </span>
                     </div>
-
-                    <span>
-                      {money(
-                        item.quantity *
-                          item.unitPrice
-                      )}
-                    </span>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             </section>
 
@@ -209,7 +229,9 @@ export default function AtaDetailsPage() {
 
                 <p className="mt-1 text-xs text-zinc-500">
                   {data.hours} h ×{" "}
-                  {money(data.hourlyRate)}
+                  {money(
+                    data.hourlyRate
+                  )}
                 </p>
               </div>
 
@@ -223,7 +245,10 @@ export default function AtaDetailsPage() {
                 <span>Avgående</span>
 
                 <span>
-                  - {money(data.outgoing)}
+                  -{" "}
+                  {money(
+                    data.outgoing
+                  )}
                 </span>
               </section>
             )}
@@ -236,7 +261,9 @@ export default function AtaDetailsPage() {
                   </span>
 
                   <span>
-                    {money(data.subtotal)}
+                    {money(
+                      data.subtotal
+                    )}
                   </span>
                 </div>
 
@@ -257,7 +284,9 @@ export default function AtaDetailsPage() {
                     </span>
 
                     <span className="text-2xl font-semibold">
-                      {money(data.total)}
+                      {money(
+                        data.total
+                      )}
                     </span>
                   </div>
                 </div>
@@ -281,7 +310,9 @@ export default function AtaDetailsPage() {
                 </p>
 
                 <p className="mt-2 text-sm text-zinc-700">
-                  {data.customerComment}
+                  {
+                    data.customerComment
+                  }
                 </p>
               </section>
             )}
@@ -295,7 +326,9 @@ export default function AtaDetailsPage() {
                 <p className="mt-2 text-sm text-zinc-700">
                   {new Date(
                     data.decidedAt
-                  ).toLocaleString("sv-SE")}
+                  ).toLocaleString(
+                    "sv-SE"
+                  )}
                 </p>
               </section>
             )}
@@ -303,5 +336,13 @@ export default function AtaDetailsPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function AtaDetailsPage() {
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      <AtaDetailsContent />
+    </Suspense>
   );
 }
