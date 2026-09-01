@@ -161,12 +161,12 @@ export default function AtaPreviewPage() {
                 {data.title}
               </h2>
 
-<div>
-  <p className="text-xs text-zinc-500">
+<div className="mt-4">
+  <p className="text-xs font-medium uppercase tracking-wider text-zinc-400">
     Delprojekt
   </p>
 
-  <p className="mt-1 font-medium">
+  <p className="mt-1 text-sm font-medium">
     {data.subproject || "Hus"}
   </p>
 </div>
@@ -300,7 +300,7 @@ export default function AtaPreviewPage() {
           <Link
   href={`/projects/fernando/ata/new?edit=${encodeURIComponent(
     data.number
-  )}`}
+  )}&source=preview`}
   className="block w-full rounded-2xl border border-zinc-700 px-5 py-4 text-center font-medium"
 >
   Redigera

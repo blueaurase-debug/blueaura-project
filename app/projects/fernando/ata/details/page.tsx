@@ -21,6 +21,7 @@ type AtaData = {
   project: string;
   title: string;
   reason: string;
+  subproject?: string;
   description: string;
   materials: MaterialItem[];
   materialTotal: number;
@@ -159,6 +160,15 @@ function AtaDetailsContent() {
               <p className="text-xs font-medium uppercase tracking-wider text-zinc-400">
                 Ändring
               </p>
+              <div className="mt-4">
+  <p className="text-xs font-medium uppercase tracking-wider text-zinc-400">
+    Delprojekt
+  </p>
+
+  <p className="mt-1 text-sm font-medium">
+    {data.subproject || "Hus"}
+  </p>
+</div>
 
               <h2 className="mt-2 text-xl font-semibold">
                 {data.title}
