@@ -137,6 +137,10 @@ export default function FernandoProjectPage() {
     ? `/projects/fernando/ata/new?edit=${encodeURIComponent(
         ata.number
       )}`
+    : ata.status === "Väntar"
+    ? `/projects/fernando/ata/client?number=${encodeURIComponent(
+        ata.number
+      )}`
     : `/projects/fernando/ata/details?number=${encodeURIComponent(
         ata.number
       )}`

@@ -55,22 +55,46 @@ export default function AtaPreviewPage() {
     }).format(value);
 
   const sendForApproval = () => {
-    if (!data) return;
+  if (!data) return;
 
-    const sentData = {
-      ...data,
-      status: "Väntar",
-      sentAt: new Date().toISOString(),
-    };
-
-    localStorage.setItem(
-      "blueaura-ata-sent",
-      JSON.stringify(sentData)
-    );
-
-    window.location.href =
-      "/projects/fernando/ata/client";
+  const sentData = {
+    ...data,
+    status: "Väntar",
+    sentAt: new Date().toISOString(),
   };
+
+  const savedRegister = localStorage.getItem(
+    "blueaura-ata-register"
+  );
+
+  const register = savedRegister
+    ? JSON.parse(savedRegister)
+    : [];
+
+  const existingIndex = register.findIndex(
+    (item: { number: string }) =>
+      item.number === data.number
+  );
+
+  if (existingIndex >= 0) {
+    register[existingIndex] = sentData;
+  } else {
+    register.push(sentData);
+  }
+
+  localStorage.setItem(
+    "blueaura-ata-register",
+    JSON.stringify(register)
+  );
+
+  localStorage.setItem(
+    "blueaura-ata-sent",
+    JSON.stringify(sentData)
+  );
+
+  window.location.href =
+    "/projects/fernando/ata/client";
+};
 
   if (!data) {
     return (

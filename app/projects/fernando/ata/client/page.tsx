@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 type MaterialItem = {
   id: number;
@@ -34,6 +35,17 @@ type AtaData = {
 };
 
 export default function AtaClientPage() {
+  return (
+    <Suspense fallback={null}>
+      <AtaClientContent />
+    </Suspense>
+  );
+}
+
+function AtaClientContent() {
+  const searchParams = useSearchParams();
+  const ataNumber = searchParams.get("number");
+
   const [data, setData] = useState<AtaData | null>(null);
 
   const [decision, setDecision] = useState<
@@ -43,14 +55,34 @@ export default function AtaClientPage() {
   const [comment, setComment] = useState("");
 
   useEffect(() => {
-    const saved = localStorage.getItem(
-      "blueaura-ata-sent"
+  if (ataNumber) {
+    const savedRegister = localStorage.getItem(
+      "blueaura-ata-register"
     );
 
-    if (saved) {
-      setData(JSON.parse(saved));
+    const register: AtaData[] = savedRegister
+      ? JSON.parse(savedRegister)
+      : [];
+
+    const selectedAta = register.find(
+      (item) => item.number === ataNumber
+    );
+
+    if (selectedAta) {
+      setData(selectedAta);
     }
-  }, []);
+
+    return;
+  }
+
+  const saved = localStorage.getItem(
+    "blueaura-ata-sent"
+  );
+
+  if (saved) {
+    setData(JSON.parse(saved));
+  }
+}, [ataNumber]);
 
   const money = (value: number) =>
     new Intl.NumberFormat("sv-SE", {
@@ -308,26 +340,33 @@ export default function AtaClientPage() {
             </section>
 
             <section className="space-y-3">
-              <button
-                type="button"
-                onClick={() =>
-                  saveDecision("Godkänd")
-                }
-                className="w-full rounded-2xl bg-zinc-950 px-5 py-4 font-medium text-white"
-              >
-                Godkänn ÄTA
-              </button>
+  <button
+    type="button"
+    onClick={() =>
+      saveDecision("Godkänd")
+    }
+    className="w-full rounded-2xl bg-zinc-950 px-5 py-4 font-medium text-white"
+  >
+    Godkänn ÄTA
+  </button>
 
-              <button
-                type="button"
-                onClick={() =>
-                  saveDecision("Avvisad")
-                }
-                className="w-full rounded-2xl border border-zinc-300 px-5 py-4 font-medium"
-              >
-                Avvisa
-              </button>
-            </section>
+  <button
+    type="button"
+    onClick={() =>
+      saveDecision("Avvisad")
+    }
+    className="w-full rounded-2xl border border-zinc-300 px-5 py-4 font-medium"
+  >
+    Avvisa
+  </button>
+
+  <a
+    href="/projects/fernando"
+    className="block w-full rounded-2xl border border-zinc-300 px-5 py-4 text-center font-medium text-zinc-700"
+  >
+    Tillbaka till projektet
+  </a>
+</section>
 
             <p className="text-xs leading-5 text-zinc-400">
               Genom att godkänna bekräftar kunden den
