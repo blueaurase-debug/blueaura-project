@@ -16,6 +16,7 @@ type AtaRecord = {
 
 export default function FernandoProjectPage() {
   const [ataRegister, setAtaRegister] = useState<AtaRecord[]>([]);
+  const [statusFilter, setStatusFilter] = useState("Alla");
 
   useEffect(() => {
     const savedRegister = localStorage.getItem(
@@ -41,10 +42,15 @@ export default function FernandoProjectPage() {
   const waiting = ataRegister
     .filter((ata) => ata.status === "Väntar")
     .reduce((sum, ata) => sum + ata.subtotal, 0);
-
+  
   const draft = ataRegister
     .filter((ata) => ata.status === "Utkast")
     .reduce((sum, ata) => sum + ata.subtotal, 0);
+    const potentialAta = approved + waiting;
+    const filteredAta =
+  statusFilter === "Alla"
+    ? ataRegister
+    : ataRegister.filter((ata) => ata.status === statusFilter);
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
@@ -90,6 +96,19 @@ export default function FernandoProjectPage() {
             </Link>
           </div>
 
+<div className="mb-3 rounded-2xl border border-zinc-700 bg-zinc-900 p-5">
+  <p className="text-xs uppercase tracking-wider text-zinc-500">
+    Potentiellt ÄTA-värde
+  </p>
+
+  <p className="mt-2 text-2xl font-semibold">
+    {money(potentialAta)}
+  </p>
+
+  <p className="mt-2 text-xs text-zinc-500">
+    Godkända + väntande ÄTA, exkl. moms
+  </p>
+</div>
           <div className="grid grid-cols-3 gap-3">
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
               <p className="text-xs text-zinc-400">
@@ -124,77 +143,148 @@ export default function FernandoProjectPage() {
 
           {ataRegister.length > 0 ? (
             <div className="mt-6">
-              <p className="mb-3 text-sm text-zinc-400">
-                ÄTA-register
-              </p>
+              <div className="mb-4">
+  <p className="mb-3 text-sm text-zinc-400">
+    ÄTA-register
+  </p>
 
-              <div className="space-y-3">
-                {ataRegister.map((ata) => (
-                  <Link
-                    key={ata.number}
-                    href={
-  ata.status === "Utkast"
-    ? `/projects/fernando/ata/new?edit=${encodeURIComponent(
-        ata.number
-      )}`
-    : ata.status === "Väntar"
-    ? `/projects/fernando/ata/client?number=${encodeURIComponent(
-        ata.number
-      )}`
-    : `/projects/fernando/ata/details?number=${encodeURIComponent(
-        ata.number
-      )}`
-}
-                    className="block rounded-2xl border border-zinc-800 bg-zinc-900 p-5 transition hover:border-zinc-700 hover:bg-zinc-800"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-xs text-zinc-500">
-                          {ata.number}
-                        </p>
+  <div className="flex gap-2 overflow-x-auto pb-1">
+    {[
+  {
+    label: "Alla",
+    value: "Alla",
+    count: ataRegister.length,
+  },
+  {
+    label: "Utkast",
+    value: "Utkast",
+    count: ataRegister.filter(
+      (ata) => ata.status === "Utkast"
+    ).length,
+  },
+  {
+    label: "Väntar",
+    value: "Väntar",
+    count: ataRegister.filter(
+      (ata) => ata.status === "Väntar"
+    ).length,
+  },
+  {
+    label: "Godkända",
+    value: "Godkänd",
+    count: ataRegister.filter(
+      (ata) => ata.status === "Godkänd"
+    ).length,
+  },
+  {
+    label: "Avvisade",
+    value: "Avvisad",
+    count: ataRegister.filter(
+      (ata) => ata.status === "Avvisad"
+    ).length,
+  },
+].map((filter) => (
+      <button
+        key={filter.value}
+        type="button"
+        onClick={() => setStatusFilter(filter.value)}
+        className={`flex items-center whitespace-nowrap rounded-full px-3 py-2 text-xs font-medium transition ${
+          statusFilter === filter.value
+            ? "bg-white text-black"
+            : "bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+        }`}
+      >
+        <span>{filter.label}</span>
 
-                        <h3 className="mt-1 font-medium">
-                          {ata.title}
-                        </h3>
+<span
+  className={`ml-2 rounded-full px-2 py-0.5 text-[10px] ${
+    statusFilter === filter.value
+      ? "bg-zinc-200 text-zinc-700"
+      : "bg-zinc-800 text-zinc-400"
+  }`}
+>
+  {filter.count}
+</span>
+      </button>
+    ))}
+  </div>
+</div>
 
-                        <p className="mt-2 text-sm text-zinc-400">
-                          {money(ata.subtotal)} exkl. moms
-                        </p>
+{filteredAta.length > 0 ? (
+  <div className="space-y-3">
+    {filteredAta.map((ata) => (
+      <Link
+        key={ata.number}
+        href={
+          ata.status === "Utkast"
+            ? `/projects/fernando/ata/new?edit=${encodeURIComponent(
+                ata.number
+              )}`
+            : ata.status === "Väntar"
+            ? `/projects/fernando/ata/client?number=${encodeURIComponent(
+                ata.number
+              )}`
+            : `/projects/fernando/ata/details?number=${encodeURIComponent(
+                ata.number
+              )}`
+        }
+        className="block rounded-2xl border border-zinc-800 bg-zinc-900 p-5 transition hover:border-zinc-700 hover:bg-zinc-800"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs text-zinc-500">
+              {ata.number}
+            </p>
 
-                        <p className="mt-1 text-xs text-zinc-500">
-                          Tidplan: {ata.timelineImpact}
-                        </p>
-                      </div>
+            <h3 className="mt-1 font-medium">
+              {ata.title}
+            </h3>
 
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs ${
-                          ata.status === "Godkänd"
-                            ? "bg-emerald-950 text-emerald-300"
-                            : ata.status === "Avvisad"
-                            ? "bg-red-950 text-red-300"
-                            : ata.status === "Väntar"
-                            ? "bg-amber-950 text-amber-300"
-                            : "bg-zinc-800 text-zinc-300"
-                        }`}
-                      >
-                        {ata.status}
-                      </span>
-                    </div>
+            <p className="mt-2 text-sm text-zinc-400">
+              {money(ata.subtotal)} exkl. moms
+            </p>
 
-                    {ata.customerComment && (
-                      <div className="mt-4 border-t border-zinc-800 pt-4">
-                        <p className="text-xs text-zinc-500">
-                          Kundkommentar
-                        </p>
+            <p className="mt-1 text-xs text-zinc-500">
+              Tidplan: {ata.timelineImpact}
+            </p>
+          </div>
 
-                        <p className="mt-1 text-sm text-zinc-300">
-                          {ata.customerComment}
-                        </p>
-                      </div>
-                    )}
-                  </Link>
-                ))}
-              </div>
+          <span
+            className={`rounded-full px-3 py-1 text-xs ${
+              ata.status === "Godkänd"
+                ? "bg-emerald-950 text-emerald-300"
+                : ata.status === "Avvisad"
+                ? "bg-red-950 text-red-300"
+                : ata.status === "Väntar"
+                ? "bg-amber-950 text-amber-300"
+                : "bg-zinc-800 text-zinc-300"
+            }`}
+          >
+            {ata.status}
+          </span>
+        </div>
+
+        {ata.customerComment && (
+          <div className="mt-4 border-t border-zinc-800 pt-4">
+            <p className="text-xs text-zinc-500">
+              Kundkommentar
+            </p>
+
+            <p className="mt-1 text-sm text-zinc-300">
+              {ata.customerComment}
+            </p>
+          </div>
+        )}
+      </Link>
+    ))}
+  </div>
+) : (
+  <div className="rounded-2xl border border-dashed border-zinc-800 p-6 text-center">
+    <p className="text-sm text-zinc-400">
+      Inga ÄTA i denna kategori.
+    </p>
+  </div>
+)}
             </div>
           ) : (
             <div className="mt-6 rounded-2xl border border-dashed border-zinc-800 p-8 text-center">
