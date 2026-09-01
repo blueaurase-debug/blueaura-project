@@ -47,6 +47,17 @@ export default function FernandoProjectPage() {
     .filter((ata) => ata.status === "Utkast")
     .reduce((sum, ata) => sum + ata.subtotal, 0);
     const potentialAta = approved + waiting;
+    const houseContractSum = 3200000;
+const poolContractSum = 391000;
+
+const contractSum =
+  houseContractSum + poolContractSum;
+
+const currentContractSum =
+  contractSum + approved;
+
+const potentialFinalSum =
+  contractSum + approved + waiting;
     const filteredAta =
   statusFilter === "Alla"
     ? ataRegister
@@ -99,6 +110,99 @@ export default function FernandoProjectPage() {
 <div className="mb-3 rounded-2xl border border-zinc-700 bg-zinc-900 p-5">
   <p className="text-xs uppercase tracking-wider text-zinc-500">
     Potentiellt ÄTA-värde
+    <section className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
+  <div className="mb-5">
+    <p className="text-xs uppercase tracking-wider text-zinc-500">
+      Projektekonomi
+    </p>
+
+    <h2 className="mt-2 text-lg font-semibold">
+      Ekonomisk översikt
+    </h2>
+  </div>
+
+  <div className="space-y-4 text-sm">
+    <div className="space-y-3">
+  <div className="flex items-center justify-between">
+    <span className="text-zinc-400">
+      Hus
+    </span>
+
+    <span>
+      {money(houseContractSum)}
+    </span>
+  </div>
+
+  <div className="flex items-center justify-between">
+    <span className="text-zinc-400">
+      Pool
+    </span>
+
+    <span>
+      {money(poolContractSum)}
+    </span>
+  </div>
+
+  <div className="flex items-center justify-between border-t border-zinc-800 pt-3">
+    <span className="font-medium">
+      Kontraktssumma
+    </span>
+
+    <span className="font-semibold">
+      {money(contractSum)}
+    </span>
+  </div>
+</div>
+
+    <div className="flex items-center justify-between">
+      <span className="text-zinc-400">
+        Godkända ÄTA
+      </span>
+
+      <span className="font-medium">
+        + {money(approved)}
+      </span>
+    </div>
+
+    <div className="border-t border-zinc-800 pt-4">
+      <div className="flex items-center justify-between">
+        <span className="font-medium">
+          Aktuell kontraktssumma
+        </span>
+
+        <span className="text-lg font-semibold">
+          {money(currentContractSum)}
+        </span>
+      </div>
+    </div>
+
+    <div className="flex items-center justify-between">
+      <span className="text-zinc-400">
+        Väntande ÄTA
+      </span>
+
+      <span className="font-medium">
+        + {money(waiting)}
+      </span>
+    </div>
+
+    <div className="border-t border-zinc-700 pt-4">
+      <div className="flex items-center justify-between">
+        <span className="font-medium">
+          Potentiell slutnivå
+        </span>
+
+        <span className="text-xl font-semibold">
+          {money(potentialFinalSum)}
+        </span>
+      </div>
+
+      <p className="mt-2 text-xs text-zinc-500">
+        Kontraktssumma + godkända och väntande ÄTA
+      </p>
+    </div>
+  </div>
+</section>
   </p>
 
   <p className="mt-2 text-2xl font-semibold">

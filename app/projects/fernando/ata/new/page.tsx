@@ -22,6 +22,7 @@ function NewAtaContent() {
   );
 
   const [reason, setReason] = useState("Kundändring");
+  const [subproject, setSubproject] = useState("Hus");
 
   const [description, setDescription] = useState(
     "Kök: 8 st spotlights. Badrum entréplan: 6 st spotlights samt extra dubbeluttag IP55. Badrum övre plan: 6 st spotlights samt extra dubbeluttag IP55."
@@ -91,6 +92,7 @@ function NewAtaContent() {
     setAtaNumber(source.number);
     setTitle(source.title);
     setReason(source.reason);
+    setSubproject(source.subproject || "Hus");
     setDescription(source.description);
     setMaterials(source.materials);
     setHours(source.hours);
@@ -180,6 +182,7 @@ function NewAtaContent() {
       project: "Fernando – Villa + Pool",
       title,
       reason,
+      subproject,
       description,
       materials,
       materialTotal,
@@ -210,6 +213,7 @@ function NewAtaContent() {
     project: "Fernando – Villa + Pool",
     title,
     reason,
+    subproject,
     description,
     materials,
     materialTotal,
@@ -300,6 +304,19 @@ function NewAtaContent() {
               onChange={(e) => setTitle(e.target.value)}
               className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none"
             />
+            <label className="mt-5 block text-sm text-zinc-300">
+  Delprojekt
+</label>
+
+<select
+  value={subproject}
+  onChange={(e) => setSubproject(e.target.value)}
+  className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none"
+>
+  <option>Hus</option>
+  <option>Pool</option>
+  <option>Gemensamt</option>
+</select>
 
             <label className="mt-5 block text-sm text-zinc-300">
               Orsak
