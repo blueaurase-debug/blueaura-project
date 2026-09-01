@@ -119,11 +119,13 @@ export default function AtaPreviewPage() {
     <main className="min-h-screen bg-zinc-950 px-4 py-8 text-white">
       <div className="mx-auto max-w-2xl">
         <Link
-          href="/projects/fernando/ata/new"
-          className="mb-6 inline-block text-sm text-zinc-400 hover:text-white"
-        >
-          ← Redigera ÄTA
-        </Link>
+  href={`/projects/fernando/ata/new?edit=${encodeURIComponent(
+    data.number
+  )}`}
+  className="mb-6 inline-block text-sm text-zinc-400 hover:text-white"
+>
+  ← Redigera ÄTA
+</Link>
 
         <div className="overflow-hidden rounded-3xl bg-white text-zinc-950">
           <header className="border-b border-zinc-200 px-6 py-7">
@@ -286,11 +288,13 @@ export default function AtaPreviewPage() {
 
         <div className="mt-6 space-y-3">
           <Link
-            href="/projects/fernando/ata/new"
-            className="block w-full rounded-2xl border border-zinc-700 px-5 py-4 text-center font-medium"
-          >
-            Redigera
-          </Link>
+  href={`/projects/fernando/ata/new?edit=${encodeURIComponent(
+    data.number
+  )}`}
+  className="block w-full rounded-2xl border border-zinc-700 px-5 py-4 text-center font-medium"
+>
+  Redigera
+</Link>
 
           <button
             type="button"

@@ -69,26 +69,39 @@ function NewAtaContent() {
       : [];
 
     if (editNumber) {
-      const draft = register.find(
-        (item: { number: string }) =>
-          item.number === editNumber
-      );
+  const savedPreview = localStorage.getItem(
+    "blueaura-ata-preview"
+  );
 
-      if (draft) {
-        setAtaNumber(draft.number);
-        setTitle(draft.title);
-        setReason(draft.reason);
-        setDescription(draft.description);
-        setMaterials(draft.materials);
-        setHours(draft.hours);
-        setHourlyRate(draft.hourlyRate);
-        setUseOutgoing(draft.useOutgoing);
-        setOutgoing(draft.outgoing);
-        setTimelineImpact(draft.timelineImpact);
-      }
+  const preview = savedPreview
+    ? JSON.parse(savedPreview)
+    : null;
 
-      return;
-    }
+  const draft = register.find(
+    (item: { number: string }) =>
+      item.number === editNumber
+  );
+
+  const source =
+    preview?.number === editNumber
+      ? preview
+      : draft;
+
+  if (source) {
+    setAtaNumber(source.number);
+    setTitle(source.title);
+    setReason(source.reason);
+    setDescription(source.description);
+    setMaterials(source.materials);
+    setHours(source.hours);
+    setHourlyRate(source.hourlyRate);
+    setUseOutgoing(source.useOutgoing);
+    setOutgoing(source.outgoing);
+    setTimelineImpact(source.timelineImpact);
+  }
+
+  return;
+}
 
     const usedNumbers = register.map(
       (item: { number?: string }) => {
