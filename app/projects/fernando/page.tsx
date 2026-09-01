@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 type AtaRecord = {
   number: string;
   title: string;
+  subproject?: string;
   subtotal: number;
   total: number;
   timelineImpact: string;
@@ -343,6 +344,11 @@ const potentialFinalSum =
             <h3 className="mt-1 font-medium">
               {ata.title}
             </h3>
+            <div className="mt-2">
+  <span className="inline-flex rounded-full bg-zinc-800 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-zinc-400">
+    {ata.subproject || "Hus"}
+  </span>
+</div>
 
             <p className="mt-2 text-sm text-zinc-400">
               {money(ata.subtotal)} exkl. moms

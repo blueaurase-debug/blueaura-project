@@ -15,6 +15,7 @@ export default function NewAtaPage() {
 function NewAtaContent() {
   const searchParams = useSearchParams();
   const editNumber = searchParams.get("edit");
+  const editSource = searchParams.get("source");
 
   const [ataNumber, setAtaNumber] = useState("ÄTA-001");
   const [title, setTitle] = useState(
@@ -84,9 +85,10 @@ function NewAtaContent() {
   );
 
   const source =
-    preview?.number === editNumber
-      ? preview
-      : draft;
+  editSource === "preview" &&
+  preview?.number === editNumber
+    ? preview
+    : draft;
 
   if (source) {
     setAtaNumber(source.number);
@@ -125,7 +127,7 @@ function NewAtaContent() {
     setAtaNumber(
       `ÄTA-${String(nextNumber).padStart(3, "0")}`
     );
-  }, [editNumber]);
+  }, [editNumber, editSource]);
 
   const materialTotal = materials.reduce(
     (sum, item) => sum + item.quantity * item.unitPrice,

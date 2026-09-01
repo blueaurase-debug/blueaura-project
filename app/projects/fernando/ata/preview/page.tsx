@@ -16,6 +16,7 @@ type AtaData = {
   project: string;
   title: string;
   reason: string;
+  subproject?: string;
   description: string;
   materials: MaterialItem[];
   materialTotal: number;
@@ -120,8 +121,8 @@ export default function AtaPreviewPage() {
       <div className="mx-auto max-w-2xl">
         <Link
   href={`/projects/fernando/ata/new?edit=${encodeURIComponent(
-    data.number
-  )}`}
+  data.number
+)}&source=preview`}
   className="mb-6 inline-block text-sm text-zinc-400 hover:text-white"
 >
   ← Redigera ÄTA
@@ -160,6 +161,15 @@ export default function AtaPreviewPage() {
                 {data.title}
               </h2>
 
+<div>
+  <p className="text-xs text-zinc-500">
+    Delprojekt
+  </p>
+
+  <p className="mt-1 font-medium">
+    {data.subproject || "Hus"}
+  </p>
+</div>
               <p className="mt-2 text-sm text-zinc-500">
                 Orsak: {data.reason}
               </p>
